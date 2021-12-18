@@ -8,6 +8,7 @@ import scrapy
 
 class InstaparserItem(scrapy.Item):
     # define the fields for your item here like:
+
     # имя страницы, подписки и подсписчиков которой парсим
     user_parser_name = scrapy.Field()
     # данные подписок и подписчиков

@@ -16,6 +16,7 @@ class InstagramSpider(scrapy.Spider):
     inst_login = 'velo5778'
     inst_pwd = '#PWD_INSTAGRAM_BROWSER:10:1639660847:AbBQAHzi39W+qpFXjjmYzmPdvgOn56+ASnqKDkIpWGVeHDcc5OJO3hwrZw9g07G3Bssyh17MAwBl/45HTdsikS0Ddu8J7mnFuQm0ULAYapii/rxTT+T1vrvOEWC8uUAs94vri2KjC4C9jRoKtTLa'
     users_parse = ['natgeo', 'youreworldgram']
+    mobile_user_agent = {'User-Agent': 'Instagram 155.0.0.37.107'}
 
     def parse(self, response: HtmlResponse):
         csrf = self.fetch_csrf_token(response.text)
@@ -36,7 +37,7 @@ class InstagramSpider(scrapy.Spider):
                     f'/{self.user}/',
                     callback=self.user_parsing,
                     cb_kwargs={'username': self.user}
-            )
+                )
 
     def user_parsing(self, response: HtmlResponse, username):
         user_id = self.fetch_user_id(response.text, username)
@@ -47,22 +48,20 @@ class InstagramSpider(scrapy.Spider):
         ]
 
         cb_kwargs_dict = {'username': username, 'user_id': user_id, 'variables': deepcopy(variables)}
-        mobile_user_agent = {'User-Agent': 'Instagram 155.0.0.37.107'}
-        print()
         for link in link_parse:
             if 'followers' in link:
                 yield response.follow(
                     link,
                     callback=self.followers_parse,
                     cb_kwargs=cb_kwargs_dict,
-                    headers=mobile_user_agent
+                    headers=self.mobile_user_agent
                 )
             elif 'following' in link:
                 yield response.follow(
                     link,
                     callback=self.following_parse,
                     cb_kwargs=cb_kwargs_dict,
-                    headers=mobile_user_agent
+                    headers=self.mobile_user_agent
                 )
 
     def followers_parse(self, response: HtmlResponse, username, user_id, variables):
@@ -76,7 +75,8 @@ class InstagramSpider(scrapy.Spider):
                 callback=self.followers_parse,
                 cb_kwargs={'username': username,
                            'user_id': user_id,
-                           'variables': deepcopy(variables)}
+                           'variables': deepcopy(variables)},
+                headers=self.mobile_user_agent
             )
 
         users = j_data.get('users')
@@ -103,7 +103,8 @@ class InstagramSpider(scrapy.Spider):
                 callback=self.following_parse,
                 cb_kwargs={'username': username,
                            'user_id': user_id,
-                           'variables': deepcopy(variables)}
+                           'variables': deepcopy(variables)},
+                headers=self.mobile_user_agent
             )
 
         users = j_data.get('users')
